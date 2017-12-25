@@ -12,6 +12,11 @@ import java.util.ResourceBundle;
  */
 public class ExtensionManager {
 
+	/**
+	 * List browser extensions for specified extension point.
+	 * @param point extension point
+	 * @return extension list
+	 */
 	public List<Extension> getExtensions(ExtensionPoint point) {
 		try {
 			List<Extension> list = new ArrayList<>();

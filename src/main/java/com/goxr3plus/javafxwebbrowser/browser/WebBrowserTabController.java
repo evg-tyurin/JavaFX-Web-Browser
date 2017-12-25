@@ -23,6 +23,7 @@ import commons.javafx.webbrowser.browser.SearchEngineComboBox;
 import commons.javafx.webbrowser.extensions.Extension;
 import commons.javafx.webbrowser.extensions.ExtensionManager;
 import commons.javafx.webbrowser.extensions.ExtensionPoint;
+import commons.javafx.webbrowser.extensions.StateListenerExtension;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleListProperty;
@@ -168,7 +169,9 @@ public class WebBrowserTabController extends StackPane {
 		// add extensions if any one was configured
 		List<Extension> extensions = new ExtensionManager().getExtensions(ExtensionPoint.STATE_LISTENER);
 		for (Extension extension : extensions) {
-			webEngine.getLoadWorker().stateProperty().addListener((ChangeListener<? super State>) extension);
+			StateListenerExtension sle = (StateListenerExtension) extension;
+			sle.setWebEngine(webEngine);
+			webEngine.getLoadWorker().stateProperty().addListener(sle);
 		}
 		
 		webEngine.setOnError(error -> checkForInternetConnection());
