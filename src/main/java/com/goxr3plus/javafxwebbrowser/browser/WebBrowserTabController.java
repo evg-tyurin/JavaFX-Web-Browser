@@ -20,6 +20,9 @@ import com.goxr3plus.javafxwebbrowser.tools.InfoTool;
 import com.jfoenix.controls.JFXButton;
 
 import commons.javafx.webbrowser.browser.SearchEngineComboBox;
+import commons.javafx.webbrowser.extensions.Extension;
+import commons.javafx.webbrowser.extensions.ExtensionManager;
+import commons.javafx.webbrowser.extensions.ExtensionPoint;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleListProperty;
@@ -162,6 +165,11 @@ public class WebBrowserTabController extends StackPane {
 		//Add listener to the WebEngine
 		webEngine.getLoadWorker().stateProperty().addListener(new FavIconProvider()); 
 		webEngine.getLoadWorker().stateProperty().addListener(new DownloadDetector()); 
+		// add extensions if any one was configured
+		List<Extension> extensions = new ExtensionManager().getExtensions(ExtensionPoint.STATE_LISTENER);
+		for (Extension extension : extensions) {
+			webEngine.getLoadWorker().stateProperty().addListener((ChangeListener<? super State>) extension);
+		}
 		
 		webEngine.setOnError(error -> checkForInternetConnection());
 		
@@ -280,11 +288,6 @@ public class WebBrowserTabController extends StackPane {
 		loadWebSite(firstWebSite);
 	}
 	
-	private Object favIconDownloader() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	/**
 	 * Returns back the main domain of the given url for example https://duckduckgo.com/?q=/favicon.ico returns <br>
 	 * https://duckduckgo.com
