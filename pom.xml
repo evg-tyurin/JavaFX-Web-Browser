@@ -70,7 +70,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>main.java.com.goxr3plus.javafxwebbrowser.application.Main</mainClass>
+							<mainClass>com.goxr3plus.javafxwebbrowser.application.Main</mainClass>
 							<classpathPrefix>JavaFXWebBrowser_lib/</classpathPrefix>
 						</manifest>
 					</archive>

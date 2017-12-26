@@ -320,7 +320,7 @@ public class WebBrowserTabController extends StackPane {
 		//			return;
 		
 		//Search if it is a valid WebSite url
-		String load = !new UrlValidator().isValid(webSite) ? null : webSite;
+		String load = webSite;// !new UrlValidator().isValid(webSite) ? null : webSite;
 		
 		//Load
 		try {
