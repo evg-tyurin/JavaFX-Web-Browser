@@ -10,10 +10,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.validator.routines.UrlValidator;
 
 import com.goxr3plus.javafxwebbrowser.marquee.Marquee;
 import com.goxr3plus.javafxwebbrowser.tools.InfoTool;
@@ -37,10 +36,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -48,6 +50,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.PromptData;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebHistory.Entry;
@@ -58,6 +61,7 @@ import net.sf.image4j.codec.ico.ICODecoder;
  * This class represents a Tab from The WebBrowser
  * 
  * @author GOXR3PLUS
+ * @author evg.tyurin
  *
  */
 public class WebBrowserTabController extends StackPane {
@@ -176,6 +180,10 @@ public class WebBrowserTabController extends StackPane {
 		
 		webEngine.setOnError(error -> checkForInternetConnection());
 		
+		webEngine.setOnAlert(event -> showAlert(event.getData()));
+		webEngine.setConfirmHandler(message -> showConfirm(message));
+		webEngine.setPromptHandler(data -> showPrompt(data));
+		
 		//handle pop up windows
 		webEngine.setCreatePopupHandler(l -> webBrowserController.createAndAddNewTab().getWebView().getEngine());
 		
@@ -291,6 +299,33 @@ public class WebBrowserTabController extends StackPane {
 		loadWebSite(firstWebSite);
 	}
 	
+	private String showPrompt(PromptData data) {
+		TextInputDialog dialog = new TextInputDialog(data.getDefaultValue());
+		dialog.setTitle("Ввод");
+		dialog.setHeaderText(data.getMessage());
+		dialog.setContentText("");
+
+		Optional<String> result = dialog.showAndWait();
+		if (result.isPresent()){
+		    return result.get();
+		}
+		return null;
+	}
+
+	private boolean showConfirm(String message) {
+		Dialog<ButtonType> confirm = new Dialog<>();
+		confirm.getDialogPane().setContentText(message);
+		confirm.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
+		boolean result = confirm.showAndWait().filter(ButtonType.YES::equals).isPresent();
+		return result;
+	}
+
+	private void showAlert(String message) {
+		Dialog<Void> alert = new Dialog<>();
+        alert.getDialogPane().setContentText(message);
+        alert.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        alert.showAndWait();	}
+
 	/**
 	 * Returns back the main domain of the given url for example https://duckduckgo.com/?q=/favicon.ico returns <br>
 	 * https://duckduckgo.com
