@@ -23,6 +23,7 @@ import commons.javafx.webbrowser.extensions.Extension;
 import commons.javafx.webbrowser.extensions.ExtensionManager;
 import commons.javafx.webbrowser.extensions.ExtensionPoint;
 import commons.javafx.webbrowser.extensions.StateListenerExtension;
+import commons.javafx.webbrowser.tools.Download;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleListProperty;
@@ -324,7 +325,8 @@ public class WebBrowserTabController extends StackPane {
 		Dialog<Void> alert = new Dialog<>();
         alert.getDialogPane().setContentText(message);
         alert.getDialogPane().getButtonTypes().add(ButtonType.OK);
-        alert.showAndWait();	}
+        alert.showAndWait();
+	}
 
 	/**
 	 * Returns back the main domain of the given url for example https://duckduckgo.com/?q=/favicon.ico returns <br>
@@ -338,7 +340,7 @@ public class WebBrowserTabController extends StackPane {
 			URL url = new URL(urlInput);
 			return url.getProtocol() + "://" + url.getHost() + "/";
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.warning(e.getClass().getName()+": "+e.getMessage());
 			return "";
 		}
 	}
@@ -487,17 +489,26 @@ public class WebBrowserTabController extends StackPane {
 		@Override
 		public void changed(ObservableValue<? extends State> observable, State oldState, State newState) {
 			if (newState == Worker.State.CANCELLED) {
-			// download detected
-			String url = webEngine.getLocation();
-			logger.info("download url: "+url);
-//             try{
-//                 Download download = new Download(webEngine.getLocation());
-//                 Thread t = new Thread(download);
-//                 t.start();
-//             }catch(Exception ex){
-//                 logger.log(Level.SEVERE, "download", ex);
-//             }
-			}
+				// download detected
+				String url = webEngine.getLocation();
+				// workaround - don't trigger download on local files
+				if (url.startsWith("file:"))
+					return;
+
+				logger.info("download url: "+url);
+				try {
+					Label newLabel = new Label("Downloading...");
+					Download download = new Download(webEngine.getLocation(), newLabel);
+					Platform.runLater(() -> {
+						webBrowserController.downloadPane.setVisible(true);
+						webBrowserController.downloadPane.getChildren().add(newLabel);	
+					});
+					Thread t = new Thread(download);
+					t.start();
+				} catch (Exception ex) {
+					logger.log(Level.SEVERE, "download", ex);
+				}
+			}//if
 		}		
 	}// DownloadDetector
 
