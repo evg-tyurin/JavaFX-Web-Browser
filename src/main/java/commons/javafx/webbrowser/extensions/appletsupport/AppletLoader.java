@@ -2,7 +2,6 @@ package commons.javafx.webbrowser.extensions.appletsupport;
 
 import java.applet.Applet;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -21,8 +20,11 @@ public class AppletLoader {
 
 	static Logger logger = Logger.getLogger("Browser");
 	
-	/** Jar files already loaded from the network. */
-	private static HashMap<String, String> appletJars = new HashMap<>();
+	/** 
+	 * Jar files already loaded from the network.
+	 * Every aplet is loaded in its own ClassLoader. 
+	 */
+	private static HashMap<String, ClassLoader> appletClassloaders = new HashMap<>();
 
 //	private static HashMap<String, Applet> applets = new HashMap<>();
 	
@@ -31,36 +33,42 @@ public class AppletLoader {
 		addSoftwareLibrary(file.toURI().toURL());
 	}
 
-	/** Adds the file to the classpath */
-	public static void addSoftwareLibrary(URL file) throws Exception {
-		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
-		method.setAccessible(true);
-		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file });
+	/** 
+	 * Adds the file to the classpath 
+	 * @return new classLoader for the jar file  
+	 */
+	public static URLClassLoader addSoftwareLibrary(URL file) throws Exception {
+		// for java 9
+		URLClassLoader classLoader = new URLClassLoader(new URL[] {file}, ClassLoader.getSystemClassLoader());
+		return classLoader;
+		// for java 8 and earlier
+//		Method method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+//		method.setAccessible(true);
+//		method.invoke(ClassLoader.getSystemClassLoader(), new Object[] { file });
 	}
 
 	/** 
 	 * Loads jar file from the URL.
-	 * 
+	 *
+	 * @param clsName class name of the applet
 	 * @param jarUrl URL of the jar file
 	 * @param jarVersion version of the jar file
+	 * @return applet instance
 	 * @throws Exception
 	 */
-	public static void loadAppletJar(String jarUrl, String jarVersion) throws Exception {
-		String oldVersion = appletJars.get(jarUrl);
-		if (oldVersion==null){
-			AppletLoader.addSoftwareLibrary(new URL(jarUrl));
-			appletJars.put(jarUrl, jarVersion);
+	public static Applet loadApplet(String clsName, String jarUrl, String jarVersion) throws Exception {
+		String key = jarUrl+"$"+jarVersion;
+		ClassLoader classLoader = appletClassloaders.get(key);
+		if (classLoader==null){
+			classLoader = AppletLoader.addSoftwareLibrary(new URL(jarUrl));
+			appletClassloaders.put(key, classLoader);
 			logger.info("applet loaded: "+jarUrl);
 		}
 		else{
-			if (oldVersion.equals(jarVersion)){
-				logger.info("applet already loaded: "+jarUrl);
-			}
-			else{
-				logger.severe("jarVersion mismatch for "+jarUrl+" / "+oldVersion+" -> "+jarVersion);
-				throw new Exception("Версия файла изменилась. Требуется перезапуск браузера. ["+oldVersion+"] -> ["+jarVersion+"]");
-			}
+			logger.info("applet already loaded: "+jarUrl);
 		}
+		Applet app = (Applet) classLoader.loadClass(clsName).newInstance();
+		return app;
 	}
 
 	/** 
@@ -78,9 +86,8 @@ public class AppletLoader {
 		
 		String jarUrl = jnlpHref.substring(0, jnlpHref.lastIndexOf("/"))+"/"+jar;
 
-		AppletLoader.loadAppletJar(jarUrl, jarVersion);
+		Applet app = AppletLoader.loadApplet(clsName, jarUrl, jarVersion);
 		
-		Applet app = (Applet) Class.forName(clsName).newInstance();
 		MyAppletStub stub = new MyAppletStub();
 		stub.setParameter("id", appletId);
 		NodeList params = applet.getElementsByTagName("param");
