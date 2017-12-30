@@ -12,10 +12,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.goxr3plus.javafxwebbrowser.tools.InfoTool;
-import com.jfoenix.controls.JFXButton;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -41,7 +41,7 @@ public class WebBrowserController extends StackPane {
 	private TabPane tabPane;
 	
 	@FXML
-	private JFXButton addTab;
+	private Button addTab;
 	
 	@FXML 
 	HBox downloadPane;

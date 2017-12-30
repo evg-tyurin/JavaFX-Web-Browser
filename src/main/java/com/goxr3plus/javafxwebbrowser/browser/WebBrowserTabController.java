@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 
 import com.goxr3plus.javafxwebbrowser.marquee.Marquee;
 import com.goxr3plus.javafxwebbrowser.tools.InfoTool;
-import com.jfoenix.controls.JFXButton;
 
 import commons.javafx.webbrowser.browser.SearchEngineComboBox;
 import commons.javafx.webbrowser.extensions.Extension;
@@ -103,7 +102,7 @@ public class WebBrowserTabController extends StackPane {
 	private VBox errorPane;
 	
 	@FXML
-	private JFXButton tryAgain;
+	private Button tryAgain;
 	
 	// -------------------------------------------------------------
 	

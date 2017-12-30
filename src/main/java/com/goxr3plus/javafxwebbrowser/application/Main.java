@@ -10,9 +10,12 @@
 
 package com.goxr3plus.javafxwebbrowser.application;
 
+import java.net.Authenticator;
+
 import com.goxr3plus.javafxwebbrowser.browser.WebBrowserController;
 import com.goxr3plus.javafxwebbrowser.tools.InfoTool;
 
+import commons.javafx.webbrowser.tools.MyAuthenticator;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
@@ -23,9 +26,13 @@ import javafx.stage.Stage;
  * From here you start the application
  * 
  * @author GOXR3PLUS STUDIO ( your bro! )
- *
+ * @author evg.tyurin
  */
 public class Main extends Application {
+	static {
+		// support for BASIC HTTP authorization
+		Authenticator.setDefault(new MyAuthenticator());
+	}
 	
 	/*
 	 * (non-Javadoc)
