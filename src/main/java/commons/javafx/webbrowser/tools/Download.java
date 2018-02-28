@@ -66,6 +66,7 @@ public class Download implements Runnable{
 			Document xml = XmlUtils.getDomDocument(file);
 			String codebase = XmlUtils.getConfigParam(xml, "/jnlp/@codebase");
 			String jar = XmlUtils.getConfigParam(xml, "/jnlp/resources/jar/@href");
+			String jvmArgs = nvl(XmlUtils.getConfigParam(xml, "/jnlp/resources/j2se/@java-vm-args"),"");
 			String mainClass = XmlUtils.getConfigParam(xml, "/jnlp/application-desc/@main-class");
 			String argument = XmlUtils.getConfigParam(xml, "/jnlp/application-desc/argument/text()");
 			
@@ -78,13 +79,17 @@ public class Download implements Runnable{
 			File jarfile = downloadFile(new URL(jarUrl), dir);
 			
 			Runtime.getRuntime().exec(new String[] {
-					"java", "-Xmx128M", "-cp", jarfile.getAbsolutePath(), mainClass, argument
+					"java", jvmArgs, "-cp", jarfile.getAbsolutePath(), mainClass, argument
 			});
 
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Can't launch JNLP file", e);
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String nvl(String str, String defValue) {
+		return str!=null ? str : defValue;
 	}
 
 	private File downloadFile(URL url, File dir)
